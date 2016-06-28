@@ -1,42 +1,62 @@
-$('document').ready(function() {
-  console.log('document loaded...');
-
-  function injectBg(src) {
-    $img = $('<img>', { src: src, class: 'background', alt: 'background' });
-    $('body').append($img);
-    // var img = document.createElement('img');
-    // img.src = src;
-    // img.className = 'background';
-    // img.alt = 'background';
-
-    // document.body.appendChild(img);
+$('window').ready(function() {
+  function getImages(callback) {
+    chrome.storage.local.get(function(data) {
+      callback(data.images);
+    });
   }
 
-  function displayImg(img) {
-    // var reader = new FileReader();
+  function saveImage(image, callback) {
+    getImages(function(images) {
+      if (!images) images = [];
+      images.push(image);
 
-    // reader.onload = function(evt){
-    //   injectBg(evt.target.result);
-    // };
+      chrome.storage.local.set({ images: images }, function() {
+        callback();
+      });
+    });
+  }
 
-    // reader.readAsDataURL(img);
-
-    injectBg(img);
+  function setBg(src) {
+    if ($('img')[0]) {
+      $('img').fadeOut(function() {
+        $('img')[0].src = src;
+        $('img').fadeIn();
+      });
+    } else {
+      $img = $('<img>', { src: src, class: 'background', alt: 'background', style: 'display: none' });
+      $('body').append($img);
+      $('img').fadeIn();
+    }
   }
 
   function displayDropZoneText() {
-    console.log('drop your images here');
+    console.log('no images found');
+    console.log('drop your images here...');
+
+    $dropZoneText = $('<h1>', { class: 'center', text: 'drop you images here' });
+    $('body').append($dropZoneText);
   }
 
   function display() {
-    // localStorage.clear();
-    item = localStorage.getItem('images');
-    if (item === null)
-      displayDropZoneText();
-    else {
-      images = JSON.parse(item)['images'];
-      displayImg(images[Math.floor(Math.random() * images.length)]);
-    }
+    getImg(function(img) {
+      $('document').ready(function() {
+        // setup the dnd listeners
+        var $dropZone = $('<div>', { id: 'drop_zone' });
+        $dropZone.on('dragover', handleDragOver);
+        $dropZone.on('drop', handleFileSelect);
+        $('body').append($dropZone);
+
+        if (img) setBg(img);
+        else displayDropZoneText();
+      });
+    });
+  }
+
+  function getImg(callback) {
+    getImages(function(images) {
+      if (!images) callback();
+      callback(images[Math.floor(Math.random() * images.length)]);
+    });
   }
 
   function handleFileSelect(evt) {
@@ -45,27 +65,23 @@ $('document').ready(function() {
 
     // fileList object
     var files = evt.originalEvent.dataTransfer.files; 
-    console.log(files);
-    // for (var i = 0; i < files.length; ++i) {
-    //   if (files[i].type.match('image.*')) {
-    //     console.log(files[i]);
-    //     var reader = new FileReader();
 
-    //     reader.onload = function(evt){
-    //       images = [];
-    //       item = localStorage.getItem('images');
-    //       if (item != null) images = JSON.parse(item)['images'];
-    //       images.push(evt.target.result);
-    //       item = JSON.stringify({'images': images});
-    //       localStorage.setItem('images', item);
-    //       injectBg(evt.target.result);
-    //     };
+    for (var i = 0; i < files.length; ++i) {
 
-    //     reader.readAsDataURL(files[i]);
-    //   }
-    // }
+      if (files[i].type.match('image/*')) {
+        console.log('loaded ' + files[i].name);
 
-    // display();
+        var reader = new FileReader();
+
+        reader.onload = function(evt){
+          saveImage(evt.target.result, function() {
+            setBg(evt.target.result);
+          });
+        }
+
+        reader.readAsDataURL(files[i]);
+      }
+    }
   }
 
   function handleDragOver(evt) {
@@ -76,15 +92,9 @@ $('document').ready(function() {
     evt.originalEvent.dataTransfer.dropEffect = 'copy'; 
   }
 
-  // setup the dnd listeners
-  var $dropZone = $('<div>', { id: 'drop_zone' });
-  $dropZone.on('dragover', handleDragOver);
-  $dropZone.on('drop', handleFileSelect);
-
-  $('body').append($dropZone);
-  // var dropZone = document.getElementById('drop_zone');
-  // dropZone.addEventListener('dragover', handleDragOver, false);
-  // dropZone.addEventListener('drop', handleFileSelect, false);
-
-  display();
+  (function init() {
+    // localStorage.clear();
+    // chrome.storage.local.clear();
+    display();
+  })();
 });
