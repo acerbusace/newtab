@@ -18,14 +18,27 @@ $('window').ready(function() {
 
   function setBg(src) {
     if ($('img')[0]) {
-      $('img').fadeOut(function() {
-        $('img')[0].src = src;
-        $('img').fadeIn();
+      $fadeOutContainer = $('<div>', { id: 'fadeOutContainer' });
+      $img = $('<img>', { src: $('img')[0].src, class: 'background', alt: 'background' });
+      $fadeOutContainer.append($img);
+
+      $('#fadeInContainer').style = 'display: none';
+      $('img')[0].src = src;
+
+      $('body').append($fadeOutContainer);
+
+      $('#fadeOutContainer').fadeOut(function() {
+        $('#fadeOutContainer').remove();
       });
+
+      $('#fadeContainerOne').fadeIn();
     } else {
-      $img = $('<img>', { src: src, class: 'background', alt: 'background', style: 'display: none' });
-      $('body').append($img);
-      $('img').fadeIn();
+      $fadeContainer = $('<div>', { id: 'fadeInContainer', style: 'display: none' });
+      $img = $('<img>', { src: src, class: 'background', alt: 'background' });
+      $fadeContainer.append($img);
+
+      $('body').append($fadeContainer);
+      $('#fadeInContainer').fadeIn();
     }
   }
 
@@ -33,8 +46,10 @@ $('window').ready(function() {
     console.log('no images found');
     console.log('drop your images here...');
 
-    $dropZoneText = $('<h1>', { class: 'center', text: 'drop you images here' });
-    $('body').append($dropZoneText);
+    $textProperty = $('<div>', { class: 'center' });
+    $dropZoneText = $('<div>', { class: 'font-effect-fire-animation', text: 'drop your images here' });
+    $textProperty.append($dropZoneText);
+    $('body').append($textProperty);
   }
 
   function display() {
@@ -54,8 +69,8 @@ $('window').ready(function() {
 
   function getImg(callback) {
     getImages(function(images) {
-      if (!images) callback();
-      callback(images[Math.floor(Math.random() * images.length)]);
+      if (!images) return callback();
+      return callback(images[Math.floor(Math.random() * images.length)]);
     });
   }
 
@@ -75,6 +90,7 @@ $('window').ready(function() {
 
         reader.onload = function(evt){
           saveImage(evt.target.result, function() {
+            $('.center').remove();
             setBg(evt.target.result);
           });
         }
@@ -93,7 +109,6 @@ $('window').ready(function() {
   }
 
   (function init() {
-    // localStorage.clear();
     // chrome.storage.local.clear();
     display();
   })();
