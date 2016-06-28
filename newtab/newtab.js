@@ -18,27 +18,15 @@ $('window').ready(function() {
 
   function setBg(src) {
     if ($('img')[0]) {
-      $fadeOutContainer = $('<div>', { id: 'fadeOutContainer' });
-      $img = $('<img>', { src: $('img')[0].src, class: 'background', alt: 'background' });
-      $fadeOutContainer.append($img);
-
-      $('#fadeInContainer').style = 'display: none';
-      $('img')[0].src = src;
-
-      $('body').append($fadeOutContainer);
-
-      $('#fadeOutContainer').fadeOut(function() {
-        $('#fadeOutContainer').remove();
+      $('img').fadeOut(function() {
+        $('img')[0].src = src;
+        $('img').fadeIn();
       });
-
-      $('#fadeContainerOne').fadeIn();
     } else {
-      $fadeContainer = $('<div>', { id: 'fadeInContainer', style: 'display: none' });
-      $img = $('<img>', { src: src, class: 'background', alt: 'background' });
-      $fadeContainer.append($img);
+      $img = $('<img>', { src: src, class: 'background', alt: 'background', style: 'display: none' });
 
-      $('body').append($fadeContainer);
-      $('#fadeInContainer').fadeIn();
+      $('body').append($img);
+      $('img').fadeIn();
     }
   }
 
