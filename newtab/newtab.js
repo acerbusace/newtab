@@ -10,7 +10,19 @@ $('window').ready(function() {
       if (!images) images = [];
       images.push(image);
 
-      chrome.storage.local.set({ 'images': images }, function() {
+      chrome.storage.local.set({ images: images }, function() {
+        callback();
+      });
+    });
+  }
+
+  function saveImages(newImages, callback) {
+    getImages(function(images) {
+      if (!images) images = [];
+      saveimgs = images.concat(newImages);
+      console.log(saveimgs);
+
+      chrome.storage.local.set({ 'images': images.concat(newImages) }, function() {
         callback();
       });
     });
@@ -58,6 +70,7 @@ $('window').ready(function() {
   function getImg(callback) {
     getImages(function(images) {
       if (!images) return callback();
+      // console.log(images.length);
       return callback(images[Math.floor(Math.random() * images.length)]);
     });
   }
@@ -68,6 +81,9 @@ $('window').ready(function() {
 
     // fileList object
     var files = evt.originalEvent.dataTransfer.files; 
+    var imagesLoaded = 0;
+    var totalImages = files.length;
+    var images = [];
 
     for (var i = 0; i < files.length; ++i) {
 
@@ -77,14 +93,19 @@ $('window').ready(function() {
         var reader = new FileReader();
 
         reader.onload = function(evt){
-          saveImage(evt.target.result, function() {
-            $('.center').remove();
-            setBg(evt.target.result);
-          });
+          images.push(evt.target.result);
+
+          if (++imagesLoaded == totalImages) {
+            console.log('loaded all images');
+            saveImages(images, function() {
+              $('.center').remove();
+              setBg(evt.target.result);
+            });
+          }
         }
 
         reader.readAsDataURL(files[i]);
-      }
+      } else --totalImages;
     }
   }
 
