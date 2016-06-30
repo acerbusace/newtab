@@ -10,7 +10,7 @@ $('window').ready(function() {
       if (!images) images = [];
       images.push(image);
 
-      chrome.storage.local.set({ images: images }, function() {
+      chrome.storage.local.set({ 'images': images }, function() {
         callback();
       });
     });
