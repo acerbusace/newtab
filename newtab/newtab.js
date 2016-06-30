@@ -99,9 +99,10 @@ $('window').ready(function() {
             console.log('loaded all images');
             saveImages(images, function() {
               $('.center').remove();
-              setBg(evt.target.result);
             });
           }
+
+          setBg(evt.target.result);
         }
 
         reader.readAsDataURL(files[i]);
