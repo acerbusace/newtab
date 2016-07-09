@@ -5,13 +5,20 @@ $('window').ready(function() {
     });
   }
 
+  function getToDos(callback) {
+    chrome.storage.local.get(function(data) {
+      console.log('data');
+      console.log(data);
+      callback(data.todos);
+    });
+  }
+
   function saveImage(image, callback) {
     getImages(function(images) {
       if (!images) images = [];
       images.push(image);
-
-      chrome.storage.local.set({ images: images }, function() {
-        callback();
+      chrome.storage.local.set({ images: images}, function() {
+        if (typeof(callback) == 'function') callback();
       });
     });
   }
@@ -19,11 +26,29 @@ $('window').ready(function() {
   function saveImages(newImages, callback) {
     getImages(function(images) {
       if (!images) images = [];
-      saveimgs = images.concat(newImages);
-      console.log(saveimgs);
+      images.concat(newImages);
+      chrome.storage.local.set({ images: images }, function() {
+        if (typeof(callback) == 'function') callback();
+      });
+    });
+  }
 
-      chrome.storage.local.set({ 'images': images.concat(newImages) }, function() {
-        callback();
+  function saveToDo(todo, callback) {
+    getToDos(function(todos) {
+      if (!todos) todos = [];
+      todos.push(todo);
+      chrome.storage.local.set({ todos: todos }, function() {
+        if (typeof(callback) == 'function') callback();
+      });
+    });
+  }
+
+  function removeToDo(todo, callback) {
+    getToDos(function(todos) {
+      if (!todos) return;
+      todos.splice(todos.indexOf(todo), 1);
+      chrome.storage.local.set({ todos: todos }, function() {
+        if (typeof(callback) == 'function') callback();
       });
     });
   }
@@ -52,14 +77,73 @@ $('window').ready(function() {
     $('body').append($textProperty);
   }
 
+  function displayTodo(todo) {
+    $span = $('<span>', {class: 'glyphicon glyphicon-remove'});
+    $button = $('<button>', {class: 'remove-item btn btn-default btn-xs pull-right'});
+
+    $button.click(function() {
+      removeToDo($(this).parent().text());
+      $(this).parent().remove();
+    });
+
+    $('#todoList').append($('<li>', {text: todo, style: 'color:white; padding-top:1vh; padding-bottom:1vh;'}).append($button.append($span)));
+  }
+
+  function displayTodos() {
+    getToDos(function(todos) {
+      for (var i in todos) {
+        displayTodo(todos[i]);
+      }
+    });
+  }
+
+  function createInput() {
+    $input = $('<input>', {type: 'text', class: 'form-control', id: 'todoInput'});
+
+    $input.keyup(function(evt) {
+      if (evt.which == 13) {
+        displayTodo($('#todoInput').val());
+        saveToDo($('#todoInput').val());
+
+        $('#todoInput').val('');
+      }
+    });
+
+    $fromGroup = $('<div>', {class: 'form-group'});
+    $fromGroup.append($input);
+    return $fromGroup; 
+  }
+
+  function displayTodoList() {
+    $col = $('<div>', {class: 'col-sm-12'});
+    $row = $('<div>', {class: 'row'});
+    $well = $('<div>', {class: 'well todo'});
+    $container = $('<div>', {class: 'container', style: 'width:100%; min-height:50vh; padding-top:15%;'});
+
+    $well.append($('<div>', {class: 'row'}).append($('<div>', {class: 'col-sm-12'}).append($('<h1>', {text: 'To-Do', style: 'color:white;'}).append($('<small>', {text: 'List'})))));
+
+    $well.append($row.append($col.append(createInput())));
+    $well.append($('<div>', {class: 'row'}).append($('<div>', {class: 'col-sm-12'}).append($('<ul>', {class: 'list-unstyled', id: 'todoList'}))));
+    $container.append($well);
+
+    $('body').append($('<div>', {class: 'container', style: 'width:100%;'}).append($('<div>', {class: 'row'}).append($('<div>', {class: 'col-sm-6'}).append($container))));
+
+    displayTodos();
+  }
+
+  function displayDropZone() {
+    var $dropZone = $('<div>', { id: 'drop_zone' });
+    $dropZone.on('dragover', handleDragOver);
+    $dropZone.on('drop', handleFileSelect);
+    $('body').append($dropZone);
+  }
+
   function display() {
     getImg(function(img) {
       $('document').ready(function() {
         // setup the dnd listeners
-        var $dropZone = $('<div>', { id: 'drop_zone' });
-        $dropZone.on('dragover', handleDragOver);
-        $dropZone.on('drop', handleFileSelect);
-        $('body').append($dropZone);
+        displayDropZone();
+        displayTodoList();
 
         if (img) setBg(img);
         else displayDropZoneText();
