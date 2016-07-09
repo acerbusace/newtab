@@ -29,4 +29,18 @@ html {
   margin: 0;
   font-size: 4.0rem;
   color: black;
+  z-index: -1;
+}
+
+.todo {
+  opacity: 0.5;
+  background: black;
+}
+
+ul li{
+  border-bottom: 1px solid #ddd;
+}
+
+ul li:last-child{
+  border-bottom: none;
 }
