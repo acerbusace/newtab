@@ -7,9 +7,13 @@ $('window').ready(function() {
 
   function getToDos(callback) {
     chrome.storage.local.get(function(data) {
-      console.log('data');
-      console.log(data);
       callback(data.todos);
+    });
+  }
+
+  function getData(callback) {
+    chrome.storage.local.get(function(data) {
+      callback(data);
     });
   }
 
@@ -26,8 +30,7 @@ $('window').ready(function() {
   function saveImages(newImages, callback) {
     getImages(function(images) {
       if (!images) images = [];
-      images.concat(newImages);
-      chrome.storage.local.set({ images: images }, function() {
+      chrome.storage.local.set({ images: images.concat(newImages) }, function() {
         if (typeof(callback) == 'function') callback();
       });
     });
@@ -89,12 +92,16 @@ $('window').ready(function() {
     $('#todoList').append($('<li>', {text: todo, style: 'color:white; padding-top:1vh; padding-bottom:1vh;'}).append($button.append($span)));
   }
 
-  function displayTodos() {
-    getToDos(function(todos) {
-      for (var i in todos) {
-        displayTodo(todos[i]);
-      }
-    });
+  function displayTodos(todos) {
+    // getToDos(function(todos) {
+    //   for (var i in todos) {
+    //     displayTodo(todos[i]);
+    //   }
+    // });
+    
+    for (var i in todos) {
+      displayTodo(todos[i]);
+    }
   }
 
   function createInput() {
@@ -127,8 +134,6 @@ $('window').ready(function() {
     $container.append($well);
 
     $('body').append($('<div>', {class: 'container', style: 'width:100%;'}).append($('<div>', {class: 'row'}).append($('<div>', {class: 'col-sm-6'}).append($container))));
-
-    displayTodos();
   }
 
   function displayDropZone() {
@@ -139,24 +144,23 @@ $('window').ready(function() {
   }
 
   function display() {
-    getImg(function(img) {
+    getData(function(data) {
       $('document').ready(function() {
         // setup the dnd listeners
         displayDropZone();
         displayTodoList();
+        displayTodos(data.todos);
 
+        var img = getImg(data.images);
         if (img) setBg(img);
         else displayDropZoneText();
       });
     });
   }
 
-  function getImg(callback) {
-    getImages(function(images) {
-      if (!images) return callback();
-      // console.log(images.length);
-      return callback(images[Math.floor(Math.random() * images.length)]);
-    });
+  function getImg(images) {
+    if (images) 
+      return images[Math.floor(Math.random() * images.length)];
   }
 
   function handleFileSelect(evt) {
