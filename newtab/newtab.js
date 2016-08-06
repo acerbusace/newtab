@@ -93,12 +93,6 @@ $('window').ready(function() {
   }
 
   function displayTodos(todos) {
-    // getToDos(function(todos) {
-    //   for (var i in todos) {
-    //     displayTodo(todos[i]);
-    //   }
-    // });
-    
     for (var i in todos) {
       displayTodo(todos[i]);
     }
@@ -130,7 +124,7 @@ $('window').ready(function() {
     $well.append($('<div>', {class: 'row'}).append($('<div>', {class: 'col-sm-12'}).append($('<h1>', {text: 'To-Do', style: 'color:white;'}).append($('<small>', {text: 'List'})))));
 
     $well.append($row.append($col.append(createInput())));
-    $well.append($('<div>', {class: 'row'}).append($('<div>', {class: 'col-sm-12'}).append($('<ul>', {class: 'list-unstyled', id: 'todoList'}))));
+    $well.append($('<div>', {class: 'row'}).append($('<div>', {class: 'col-sm-12'}).append($('<ul>', {class: 'list-unstyled ul-list', id: 'todoList'}))));
     $container.append($well);
 
     $('body').append($('<div>', {class: 'container', style: 'width:100%;'}).append($('<div>', {class: 'row'}).append($('<div>', {class: 'col-sm-6'}).append($container))));
@@ -148,8 +142,10 @@ $('window').ready(function() {
       $('document').ready(function() {
         // setup the dnd listeners
         displayDropZone();
-        displayTodoList();
-        displayTodos(data.todos);
+        if (data.settings.showTODO) {
+          displayTodoList();
+          displayTodos(data.todos);
+        }
 
         var img = getImg(data.images);
         if (img) setBg(img);

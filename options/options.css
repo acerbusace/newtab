@@ -37,15 +37,10 @@ html {
   background: black;
 }
 
-ul li {
+ul li{
   border-bottom: 1px solid #ddd;
 }
 
-ul li:last-child {
+ul li:last-child{
   border-bottom: none;
-}
-
-.ul-list {
-  max-height:58vh;  
-  overflow-y:auto;
 }
