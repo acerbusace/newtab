@@ -142,7 +142,7 @@ $('window').ready(function() {
       $('document').ready(function() {
         // setup the dnd listeners
         displayDropZone();
-        if (data.settings.showTODO) {
+        if (data.settings && data.settings.showTODO) {
           displayTodoList();
           displayTodos(data.todos);
         }
